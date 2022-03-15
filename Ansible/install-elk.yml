@@ -1,0 +1,39 @@
+---
+  - name: elk playbook
+    hosts: elk
+    become: True
+    tasks:
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        update_cache: yes
+
+    - name: Install Python
+      apt:
+        name: python3-pip
+
+    - name: Install Docker Python Package
+      pip:
+        name: docker
+
+    - name: Create Elk Container
+      docker_container:
+        name: elk
+        image: sebp/elk:761
+        state: started
+        restart_policy: always
+        ports:
+                  - "5601:5601"
+          - "9200:9200"
+          - "5044:5044"
+
+    - name: Virtual Memory Bump
+      sysctl:
+        name: vm.max_map_count
+        value: 262144
+
+    - name: Docker Service
+      systemd:
+        name: docker
+        enabled: yes
